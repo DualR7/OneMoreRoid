@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OneMoreRoid Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="main-container">
+
+        <div id="login-screen" class="screen active">
+            <h1 class="welcome-title">OneMoreRoid'e Hoş Geldin</h1>
+            <div class="welcome-card">
+                <i class="fas fa-satellite-dish"></i>
+                <input type="text" id="login-username" placeholder="Kullanıcı adını gir...">
+                <input type="password" id="login-password" placeholder="Şifre gir...">
+                <div class="remember-me">
+                    <input type="checkbox" id="remember-me-checkbox">
+                    <label for="remember-me-checkbox">Beni Hatırla</label>
+                </div>
+                <button id="login-btn">Giriş Yap</button>
+                <button id="register-btn">Kayıt Ol</button>
+            </div>
+        </div>
+
+        <div id="server-screen" class="screen">
+            <h1 class="screen-title">Sunucu Seç</h1>
+            <div class="server-list">
+                <div class="server-card" data-server-name="tr-sunucu-1">
+                    <h3>TR Sunucu 1</h3>
+                    <p>Türkiye'den bağlanacaklar için.</p>
+                </div>
+                <div class="server-card" data-server-name="tr-sunucu-2">
+                    <h3>TR Sunucu 2</h3>
+                    <p>Türkiye'den bağlanacaklar için.</p>
+                </div>
+                <div class="server-card" data-server-name="tr-sunucu-3">
+                    <h3>TR Sunucu 3</h3>
+                    <p>Türkiye'den bağlanacaklar için.</p>
+                </div>
+                <div class="server-card" data-server-name="abd-sunucu-1">
+                    <h3>ABD Sunucu 1</h3>
+                    <p>Amerika'dan bağlanacaklar için.</p>
+                </div>
+                <div class="server-card" data-server-name="abd-sunucu-2">
+                    <h3>ABD Sunucu 2</h3>
+                    <p>Amerika'dan bağlanacaklar için.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="chat-screen" class="screen">
+            <div id="announcement-bar"></div>
+            <div class="chat-container">
+                <header>
+                    <div class="header-content">
+                        <i class="fas fa-comments"></i>
+                        <h1 class="app-title">Sunucu Adı</h1>
+                        <span id="online-users-count">0 Kişi Çevrimiçi</span>
+                    </div>
+                </header>
+                <div class="chat-main">
+                    <div id="messages"></div>
+                    <div id="user-list-container">
+                        <h3>Çevrimiçi Kullanıcılar</h3>
+                        <ul id="user-list"></ul>
+                    </div>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="message-input" placeholder="Mesajını yaz...">
+                    <button id="send-btn">Gönder</button>
+                </div>
+                <p id="typing-indicator"></p>
+            </div>
+        </div>
+
+        <div id="admin-panel-screen" class="screen">
+            <h1 class="screen-title">Yönetici Paneli</h1>
+            <div class="admin-panel-content">
+                <div class="admin-section">
+                    <h3>Duyuru Yönetimi</h3>
+                    <input type="text" id="announcement-input" placeholder="Duyuru metnini gir...">
+                    <button id="set-announcement-btn">Duyuru Yap</button>
+                    <button id="clear-announcement-btn">Duyuruyu Kaldır</button>
+                </div>
+                <div class="admin-section">
+                    <h3>Kullanıcı Yönetimi</h3>
+                    <input type="text" id="target-user-input" placeholder="Kullanıcı adı...">
+                    <input type="text" id="moderation-reason-input" placeholder="Sebep...">
+                    <button id="mute-user-btn">Sustur</button>
+                    <button id="kick-user-btn">At</button>
+                    <button id="ban-user-btn">Yasakla</button>
+                </div>
+                <div class="admin-section">
+                    <h3>Sohbeti Temizle</h3>
+                    <button id="clear-chat-btn">Sohbeti Temizle</button>
+                </div>
+            </div>
+            <button id="close-admin-panel-btn">Paneli Kapat</button>
+        </div>
+
+    </div>
+    <div id="version-info">Version 0.2 Beta</div>
+    <div class="settings-menu">
+        <button id="admin-panel-btn"><i class="fas fa-user-shield"></i></button>
+        <button id="theme-btn">Koyu/Açık Tema</button>
+        <button id="color-btn">Renk Değiştir</button>
+        <input type="color" id="color-picker" style="display: none;">
+    </div>
+
+    <script>
+        let socket;
+        const loginScreen = document.getElementById('login-screen');
+        const serverScreen = document.getElementById('server-screen');
+        const chatScreen = document.getElementById('chat-screen');
+        const adminPanelScreen = document.getElementById('admin-panel-screen');
+        const loginUsernameInput = document.getElementById('login-username');
+        const loginPasswordInput = document.getElementById('login-password');
+        const rememberMeCheckbox = document.getElementById('remember-me-checkbox');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const serverCards = document.querySelectorAll('.server-card');
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-btn');
+        const appTitle = document.querySelector('#chat-screen .app-title');
+        const userList = document.getElementById('user-list');
+        const onlineUsersCount = document.getElementById('online-users-count');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const themeBtn = document.getElementById('theme-btn');
+        const colorBtn = document.getElementById('color-btn');
+        const colorPicker = document.getElementById('color-picker');
+        const adminPanelBtn = document.getElementById('admin-panel-btn');
+        const closeAdminPanelBtn = document.getElementById('close-admin-panel-btn');
+        const announcementInput = document.getElementById('announcement-input');
+        const setAnnouncementBtn = document.getElementById('set-announcement-btn');
+        const clearAnnouncementBtn = document.getElementById('clear-announcement-btn');
+        const targetUserInput = document.getElementById('target-user-input');
+        const moderationReasonInput = document.getElementById('moderation-reason-input');
+        const muteUserBtn = document.getElementById('mute-user-btn');
+        const kickUserBtn = document.getElementById('kick-user-btn');
+        const banUserBtn = document.getElementById('ban-user-btn');
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        const announcementBar = document.getElementById('announcement-bar');
+
+        let username = '';
+        let currentServer = '';
+        const isAdmin = (username) => username === 'exesayc';
+
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+        });
+
+        colorBtn.addEventListener('click', () => {
+            colorPicker.click();
+        });
+
+        colorPicker.addEventListener('input', (e) => {
+            const selectedColor = e.target.value;
+            document.documentElement.style.setProperty('--primary-color', selectedColor);
+        });
+
+        adminPanelBtn.addEventListener('click', () => {
+            if (isAdmin(username)) {
+                chatScreen.classList.remove('active');
+                adminPanelScreen.classList.add('active');
+            } else {
+                alert('Bu panele erişim yetkiniz yok.');
+            }
+        });
+
+        closeAdminPanelBtn.addEventListener('click', () => {
+            adminPanelScreen.classList.remove('active');
+            chatScreen.classList.add('active');
+        });
+
+        const storedUsername = localStorage.getItem('username');
+        const storedPassword = localStorage.getItem('password');
+        if (storedUsername && storedPassword) {
+            loginUsernameInput.value = storedUsername;
+            loginPasswordInput.value = storedPassword;
+            rememberMeCheckbox.checked = true;
+        }
+
+        loginBtn.addEventListener('click', () => {
+            const enteredUsername = loginUsernameInput.value.trim();
+            const enteredPassword = loginPasswordInput.value.trim();
+            const storedPass = localStorage.getItem(enteredUsername);
+
+            if (storedPass === enteredPassword) {
+                username = enteredUsername;
+                if (rememberMeCheckbox.checked) {
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('password', enteredPassword);
+                } else {
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('password');
+                }
+
+                fetch('/is-banned', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.banned) {
+                            alert(`Yasaklandınız! Sebep: ${data.reason}`);
+                        } else {
+                            loginScreen.classList.remove('active');
+                            serverScreen.classList.add('active');
+                            if (isAdmin(username)) {
+                                adminPanelBtn.style.display = 'block';
+                            } else {
+                                adminPanelBtn.style.display = 'none';
+                            }
+                        }
+                    });
+            } else {
+                alert('Kullanıcı adı veya şifre yanlış!');
+            }
+        });
+
+        registerBtn.addEventListener('click', () => {
+            const newUsername = loginUsernameInput.value.trim();
+            const newPassword = loginPasswordInput.value.trim();
+            if (newUsername.length > 0 && newPassword.length > 0) {
+                if (localStorage.getItem(newUsername)) {
+                    alert('Bu kullanıcı adı zaten alınmış!');
+                } else {
+                    localStorage.setItem(newUsername, newPassword);
+                    alert('Kayıt başarılı! Şimdi giriş yapabilirsin.');
+                }
+            } else {
+                alert('Lütfen kullanıcı adı ve şifre girin.');
+            }
+        });
+
+        serverCards.forEach(card => {
+            card.addEventListener('click', () => {
+                currentServer = card.dataset.serverName;
+                appTitle.textContent = card.querySelector('h3').textContent;
+                serverScreen.classList.remove('active');
+                chatScreen.classList.add('active');
+                
+                socket = io();
+                socket.on('connect', () => {
+                    socket.emit('join room', currentServer, username);
+                });
+
+                // Socket olaylarını burada tanımla
+                socket.on('chat message', (msg) => {
+                    const p = document.createElement('p');
+                    p.innerHTML = msg.text;
+                    p.classList.add('message-bubble');
+
+                    if (msg.username === 'Sistem') {
+                        p.classList.add('system-message');
+                        p.textContent = msg.text;
+                    } else {
+                        const usernameSpan = document.createElement('span');
+                        usernameSpan.textContent = `${msg.username}: `;
+                        usernameSpan.classList.add('username');
+                        p.innerHTML = msg.text;
+                        p.prepend(usernameSpan);
+
+                        if (msg.username === username) {
+                            p.classList.add('my-message');
+                            p.querySelector('.username').style.display = 'none';
+                        } else {
+                            p.classList.add('other-message');
+                        }
+                    }
+
+                    messagesDiv.appendChild(p);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                });
+
+                socket.on('update user list', (users) => {
+                    userList.innerHTML = '';
+                    users.forEach(user => {
+                        const li = document.createElement('li');
+                        li.textContent = user;
+                        li.classList.add('user-list-item');
+                        userList.appendChild(li);
+                    });
+                    onlineUsersCount.textContent = `${users.length} Kişi Çevrimiçi`;
+                });
+
+                socket.on('typing', (user) => {
+                    typingIndicator.textContent = `${user} yazıyor...`;
+                });
+                socket.on('stop typing', () => {
+                    typingIndicator.textContent = '';
+                });
+
+                socket.on('moderation', (msg) => {
+                    alert(msg);
+                });
+
+                socket.on('update announcement', (announcement) => {
+                    announcementBar.textContent = announcement;
+                    announcementBar.style.display = announcement ? 'block' : 'none';
+                });
+            });
+        });
+
+        sendButton.addEventListener('click', () => {
+            const messageText = messageInput.value.trim();
+            if (messageText !== '' && username !== '' && currentServer !== '') {
+                socket.emit('chat message', {
+                    room: currentServer,
+                    username: username,
+                    text: messageText
+                });
+                messageInput.value = '';
+                socket.emit('stop typing', currentServer, username);
+            }
+        });
+
+        let typingTimeout;
+        messageInput.addEventListener('input', () => {
+            if (currentServer && username) {
+                socket.emit('typing', currentServer, username);
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    socket.emit('stop typing', currentServer, username);
+                }, 3000);
+            }
+        });
+
+        setAnnouncementBtn.addEventListener('click', () => {
+            const announcement = announcementInput.value.trim();
+            if (announcement && isAdmin(username)) {
+                socket.emit('set announcement', announcement);
+                announcementInput.value = '';
+            }
+        });
+
+        clearAnnouncementBtn.addEventListener('click', () => {
+            if (isAdmin(username)) {
+                socket.emit('set announcement', '');
+            }
+        });
+
+        muteUserBtn.addEventListener('click', () => {
+            const userToMute = targetUserInput.value.trim();
+            const muteReason = moderationReasonInput.value.trim() || 'Sebep belirtilmedi.';
+            if (userToMute && isAdmin(username)) {
+                socket.emit('mute user', { username: userToMute, reason: muteReason });
+                alert(`${userToMute} kullanıcısı susturuldu.`);
+            }
+        });
+
+        kickUserBtn.addEventListener('click', () => {
+            const userToKick = targetUserInput.value.trim();
+            const kickReason = moderationReasonInput.value.trim() || 'Sebep belirtilmedi.';
+            if (userToKick && isAdmin(username)) {
+                socket.emit('kick user', { username: userToKick, reason: kickReason });
+                alert(`${userToKick} kullanıcısı atıldı.`);
+            }
+        });
+
+        banUserBtn.addEventListener('click', () => {
+            const userToBan = targetUserInput.value.trim();
+            const banReason = moderationReasonInput.value.trim() || 'Sebep belirtilmedi.';
+            if (userToBan && isAdmin(username)) {
+                socket.emit('ban user', { username: userToBan, reason: banReason });
+                alert(`${userToBan} kullanıcısı yasaklandı.`);
+            }
+        });
+
+        clearChatBtn.addEventListener('click', () => {
+            if (confirm('Sohbeti temizlemek istediğinizden emin misiniz?')) {
+                socket.emit('clear chat', currentServer);
+            }
+        });
+    </script>
+</body>
+</html>

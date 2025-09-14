@@ -1,0 +1,609 @@
+/* Genel Ayarlar ve Arka Plan */
+:root {
+    --primary-color: #93b5ff;
+    --background-color: #1b1c31;
+    --card-background: rgba(255, 255, 255, 0.1);
+    --text-color: #fff;
+    --text-color-light: #e6e6e6;
+    --input-background: rgba(255, 255, 255, 0.2);
+    --input-placeholder: rgba(255, 255, 255, 0.6);
+    --border-color: rgba(255, 255, 255, 0.18);
+    --chat-border: rgba(255, 255, 255, 0.1);
+}
+
+body.light-theme {
+    --primary-color: #ff768f;
+    --background-color: #f0f2f5;
+    --card-background: rgba(0, 0, 0, 0.1);
+    --text-color: #333;
+    --text-color-light: #555;
+    --input-background: rgba(0, 0, 0, 0.1);
+    --input-placeholder: rgba(0, 0, 0, 0.5);
+    --border-color: rgba(0, 0, 0, 0.18);
+    --chat-border: rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+    color: var(--text-color);
+    transition: all 0.5s ease-in-out;
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1b1c31, #2a2c4e, #4e507b, #1b1c31);
+    background-size: 400% 400%;
+    animation: gradient-animation 20s ease infinite;
+    z-index: -1;
+}
+
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Ekran Yönetimi */
+.main-container {
+    width: 90%;
+    max-width: 900px;
+    height: 95vh;
+    position: relative;
+    overflow: hidden;
+    animation: pop-in 0.8s ease-out;
+    background: var(--card-background);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    border: 1px solid var(--border-color);
+    display: flex;
+}
+
+@keyframes pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.5s ease;
+}
+
+.screen.active {
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+}
+
+/* Giriş Ekranı ve Sunucu Ekranı */
+#login-screen, #server-screen {
+    background: none;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    flex-grow: 1;
+}
+
+.welcome-title {
+    font-size: 1.8em;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--text-color);
+}
+
+.welcome-card {
+    background: var(--card-background);
+    border-radius: 15px;
+    padding: 30px;
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.welcome-card i {
+    font-size: 3em;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+#login-username, #login-password {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    background: var(--input-background);
+    color: var(--text-color);
+    text-align: center;
+    font-size: 1em;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+#login-username::placeholder, #login-password::placeholder {
+    color: var(--input-placeholder);
+}
+
+#login-username:focus, #login-password:focus {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.remember-me label {
+    margin-left: 5px;
+    font-size: 0.9em;
+    color: var(--text-color);
+}
+
+#login-btn, #register-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    color: var(--background-color);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, var(--primary-color), #7a9cff);
+    background-size: 200% 200%;
+}
+
+#login-btn:hover, #register-btn:hover {
+    background-position: 100% 0;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.screen-title {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.server-list {
+    width: 100%;
+    max-height: 70%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.server-card {
+    background: var(--card-background);
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.server-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--primary-color);
+}
+
+.server-card h3 {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.server-card p {
+    margin: 5px 0 0;
+    font-size: 0.9em;
+    color: var(--text-color-light);
+}
+
+/* Sohbet Ekranı */
+#chat-screen {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    background: none;
+    border-radius: 20px;
+    backdrop-filter: none;
+    box-shadow: none;
+    border: none;
+    overflow: hidden;
+}
+
+#chat-screen .chat-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+#announcement-bar {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    padding: 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    display: none;
+}
+
+#chat-screen header {
+    background: var(--card-background);
+    padding: 15px;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-title {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-color);
+}
+
+#online-users-count {
+    font-size: 0.8em;
+    margin-top: 5px;
+    color: var(--text-color-light);
+}
+
+.fas.fa-comments {
+    margin-right: 10px;
+    font-size: 1.5em;
+    color: var(--primary-color);
+    animation: pulse-animation 2s infinite;
+}
+
+@keyframes pulse-animation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.chat-main {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+#messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-bubble {
+    max-width: 75%;
+    padding: 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    animation: message-in 0.5s ease-out;
+}
+
+@keyframes message-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-bubble:hover {
+    transform: translateY(-2px);
+}
+
+.my-message {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    align-self: flex-end;
+    border-bottom-right-radius: 5px;
+}
+
+.other-message {
+    background-color: var(--card-background);
+    color: var(--text-color-light);
+    align-self: flex-start;
+    border-bottom-left-radius: 5px;
+}
+
+.system-message {
+    background-color: transparent;
+    color: var(--text-color-light);
+    font-style: italic;
+    text-align: center;
+    align-self: center;
+}
+
+.username {
+    font-weight: bold;
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Kullanıcı Listesi */
+#user-list-container {
+    width: 250px;
+    min-width: 150px;
+    background-color: var(--card-background);
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+#user-list-container h3 {
+    margin-top: 0;
+    font-size: 1em;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+#user-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-list-item {
+    font-size: 0.9em;
+    color: var(--text-color);
+    margin-bottom: 5px;
+    background-color: var(--input-background);
+    padding: 5px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.user-list-item:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-left: 3px solid var(--primary-color);
+    transform: translateX(5px);
+}
+
+/* Girdi Kutusu */
+.input-container {
+    display: flex;
+    padding: 15px;
+    border-top: 1px solid var(--chat-border);
+    background: var(--card-background);
+}
+
+#message-input {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+    background-color: var(--input-background);
+    color: var(--text-color);
+    outline: none;
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+#message-input::placeholder {
+    color: var(--input-placeholder);
+}
+
+#send-btn {
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+#send-btn:hover {
+    background-color: #7a9cff;
+    transform: scale(1.05);
+}
+
+#typing-indicator {
+    position: absolute;
+    bottom: 5px;
+    left: 20px;
+    font-size: 0.8em;
+    color: var(--text-color-light);
+}
+
+.settings-menu {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    gap: 10px;
+}
+
+#theme-btn, #color-btn, #admin-panel-btn {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+#theme-btn:hover, #color-btn:hover, #admin-panel-btn:hover {
+    background-color: #7a9cff;
+    transform: translateY(-2px);
+}
+
+#admin-panel-btn {
+    display: none; /* Varsayılan olarak gizli */
+}
+
+#admin-panel-btn i {
+    color: #ffd700;
+    animation: glow-animation 1.5s infinite alternate;
+}
+
+@keyframes glow-animation {
+    from {
+        text-shadow: 0 0 5px #ffd700;
+    }
+    to {
+        text-shadow: 0 0 15px #ffd700, 0 0 20px #ffd700;
+    }
+}
+
+#color-picker {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+}
+
+#version-info {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.5);
+    z-index: 10;
+}
+
+/* Admin Paneli Stilleri */
+#admin-panel-screen {
+    background: var(--card-background);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.admin-panel-content {
+    width: 80%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+}
+
+.admin-section {
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease;
+}
+
+.admin-section:hover {
+    transform: translateY(-5px);
+}
+
+.admin-section h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+.admin-section input {
+    width: 80%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--input-background);
+    color: var(--text-color);
+}
+
+.admin-section button {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.admin-section button:hover {
+    background-color: #7a9cff;
+    transform: scale(1.05);
+}
